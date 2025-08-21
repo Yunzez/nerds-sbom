@@ -85,3 +85,10 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 'SELECT id, userid, ip, category, condition, instanceid, finished, heartbeat, "instanceTerminated" FROM "createdInstances" ORDER BY id DESC LIMIT 20;'
 
 ```
+
+## Export output
+```bash
+
+./dev-ob.sh export-db ~/your-path
+
+```
