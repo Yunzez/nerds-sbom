@@ -25,7 +25,7 @@ docker: Error response from daemon: pull access denied for devob-generator, repo
 
 **Do the following to make sure it does not run on sudo** 
 ```bash
-# add your user (fredzhao) to it
+# add your user to it
 sudo groupadd docker 2>/dev/null || true
 sudo usermod -aG docker $USER
 # start a NEW login session so the group applies:
