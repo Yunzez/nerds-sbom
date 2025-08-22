@@ -92,3 +92,13 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 ./dev-ob.sh export-db ~/your-path
 
 ```
+
+## Some Docker command shortcuts 
+
+```bash
+#clean all stopped containers
+docker container prune
+
+#show all containers 
+docker ps -a
+```

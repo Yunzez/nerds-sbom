@@ -185,6 +185,25 @@ elif [[ $1 == "configure" ]]; then
 elif [[ $1 == "run" ]]; then
   build_config
 
+  # # ! Ensure Dependency Track is set up
+  # echo "Ensuring Dependency Track container is ready..."
+  # if [[ "$(docker images -q dependencytrack/bundled:latest 2> /dev/null)" == "" ]]; then
+  #   echo "Pulling Dependency Track image..."
+  #   docker pull dependencytrack/bundled:latest
+  # fi
+
+  # # Start Dependency Track container if not already running
+  # if [[ "$(docker ps -q -f name=dependency-track)" == "" ]]; then
+  #   echo "Starting Dependency Track container..."
+  #   docker run -d --name dependency-track \
+  #     -p 8080:8080 \
+  #     --network ${dockerProjectName}_instances \
+  #     dependencytrack/bundled:latest
+  # else
+  #   echo "Dependency Track container is already running."
+  # fi
+
+
   runCompose build && runCompose up
 elif [[ $1 == "manager" ]]; then
   if [[ ! -d manager/pyenv ]]; then

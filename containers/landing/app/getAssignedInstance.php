@@ -33,6 +33,7 @@ if(checkPid($userId) and (strlen($token2) == 12 and preg_match("/^[0-9a-z]+$/", 
     } else {
         echo("nr");
     }
+    // echo("/proxy/dependency-track/");
 }else{
     echo("error");
 }

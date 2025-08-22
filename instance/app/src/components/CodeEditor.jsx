@@ -213,6 +213,7 @@ export default function CodeEditor(props) {
   }
 
   return (
+  
     <div id="editorContainer">
       {controlsElement}
       <Editor

@@ -1,5 +1,5 @@
 import './App.css';
-import {useState, useEffect, useRef} from 'react';
+import { useState, useEffect, useRef } from 'react';
 import CodingView from "./views/CodingView";
 import BrowserView from "./views/BrowserView";
 import StatusDot from "./components/StatusDot";
@@ -10,16 +10,16 @@ import Header from "./components/Header";
 import useFocusTime from "./hooks/useFocusTime";
 import useSavedState from "./hooks/useSavedState";
 import useTaskState from "./hooks/useTaskState";
-import {submit, compile} from "./services";
-import {isUndefined} from "./util";
+import { submit, compile } from "./services";
+import { isUndefined } from "./util";
 
 function App() {
   const [tab, setTab] = useSavedState("tab", "code");
   const [connStatus, setConnStatus] = useState(false);
   const [taskno, set_taskno] = useSavedState("taskno", 1); /* The current task in the task list after randomization + 1 */
   const [task_list, set_task_list] = useSavedState("task_list", []);
-  const suggestions = isUndefined(task_list[taskno-1]) ? [] : task_list[taskno-1].suggestions;
-  const real_taskno = isUndefined(task_list[taskno-1]) ? 1 : task_list[taskno-1].task_no; /* The current task in the original ordering + 1 */
+  const suggestions = isUndefined(task_list[taskno - 1]) ? [] : task_list[taskno - 1].suggestions;
+  const real_taskno = isUndefined(task_list[taskno - 1]) ? 1 : task_list[taskno - 1].task_no; /* The current task in the original ordering + 1 */
   const [current, set_current] = useTaskState("current", real_taskno, 0); /* Current suggestion that's selected by the user */
   const [output, set_output] = useTaskState("output", real_taskno, "");
   const editorRef = useRef(null);
@@ -76,8 +76,8 @@ function App() {
      */
     let data = {
       "type": "code",
-      "code": {"taskno": taskno, "real_taskno": real_taskno},
-      "time": {"focus_time": focus_time},
+      "code": { "taskno": taskno, "real_taskno": real_taskno },
+      "time": { "focus_time": focus_time },
       "status": statusCode
     }
 
@@ -96,17 +96,17 @@ function App() {
 
   function compile_code(code) {
     submit_code("r");
-    return compile({code: code, taskno: real_taskno});
+    return compile({ code: code, taskno: real_taskno });
   }
 
   /* Setup error handlers */
-  function handleError(e) { 
+  function handleError(e) {
     let data = {};
     if (e instanceof PromiseRejectionEvent) {
       // Quietly ignore this error, we'll see it in other data
       if (e.reason instanceof WebAssembly.RuntimeError) return;
 
-      data = {reason: e.reason};
+      data = { reason: e.reason };
     } else {
       data = {
         message: e.message,
@@ -139,9 +139,9 @@ function App() {
         />
         <div className="views-container">
           <div className="navBar">
-            <TabNav tab={tab} setTab={setTab}/>
+            <TabNav tab={tab} setTab={setTab} />
             <div className="statusBar">
-              <StatusDot label="Connection" status={connStatus}/>
+              <StatusDot label="Connection" status={connStatus} />
             </div>
           </div>
           <div className="tab-views">
@@ -161,7 +161,7 @@ function App() {
               {/*We pass current tab so BrowserView can see when the user
               switches tabs and when it needs to compute a resize for the
               window*/}
-              <BrowserView setConnStatus={setConnStatus} currentTab={tab}/>
+              <BrowserView setConnStatus={setConnStatus} currentTab={tab} />
             </TabView>
           </div>
 

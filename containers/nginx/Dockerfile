@@ -6,4 +6,4 @@ COPY nginx.conf /etc/nginx/nginx.conf
 RUN mkdir static
 COPY static/ static/
 
-EXPOSE 80 443
+EXPOSE 80 443 8080
