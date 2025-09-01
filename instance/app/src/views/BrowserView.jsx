@@ -1,9 +1,9 @@
-import {useRef, useEffect, useState} from "react";
+import { useRef, useEffect, useState } from "react";
 import RFB from "@novnc/novnc";
 import "./BrowserView.css";
 import ControlButton from "../components/ControlButton";
 import AudioPlugin from "../lib/novnc-audio";
-import {DEV_MODE} from "../util";
+import { DEV_MODE } from "../util";
 
 /* Completely disables the VNC session to enable testing without backend */
 const NO_VNC = false;
@@ -18,6 +18,79 @@ export default function BrowserView(props) {
   const audioPlugin = useRef(null);
   //const SHOW_DEBUG = process.env.NODE_ENV === "development";
   const SHOW_DEBUG = DEV_MODE;
+  const vncHasFocus = useRef(false);
+  const clipboard = props.clipboard;
+  const setClipboard = props.setClipboard;
+  console.log("browser in");
+
+ // Debug version to see what's happening:
+
+// Basic event testing to see what's working:
+
+useEffect(() => {
+  const el = rfbElement.current;
+  if (!el) {
+    console.log("No rfbElement found");
+    return;
+  }
+
+  console.log("Setting up event listeners on:", el);
+
+  function onKeyDown(e) {
+
+    const metaPaste = (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "v";
+    if (metaPaste) {
+      console.log("Ctrl+V detected!");
+      
+      // Don't prevent default yet, just log
+      const rfb = rfbObj.current;
+      if (!rfb) {
+        console.log("No RFB object");
+        return;
+      }
+
+      // Get text to paste
+      let txt = Array.isArray(clipboard)
+        ? clipboard[0]
+        : typeof clipboard === "string" ? clipboard : "";
+
+      console.log("Text to paste:", txt?.substring(0, 50));
+
+      if (txt && rfbObj.current) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log("Attempting to send text...");
+        
+        // Simple test - just send first 3 characters
+        rfb.focus?.();
+        
+        setTimeout(() => {
+          for (let i = 0, len = txt.length; i < len; i++) {
+            setTimeout(() => {
+              const char = txt[i];
+              console.log(`Sending char ${i}: '${char}' (${char.charCodeAt(i)})`);
+              rfb.sendKey(txt.charCodeAt(i)); // Single parameter like your example
+            }, i * 5); // 5ms delay between each character
+          }
+        }, 100);
+      }
+    }
+  }
+
+  // Make element focusable
+  el.tabIndex = 0;
+  
+  // Add all event listeners
+  el.addEventListener("keydown", onKeyDown, true);
+  
+  console.log("Event listeners added");
+  
+  return () => {
+    console.log("Cleaning up event listeners");
+    el.removeEventListener("keydown", onKeyDown, true);
+  };
+}, [clipboard, rfbElement, vncHasFocus]);
   
   function debug(msg) {
     if (SHOW_DEBUG) {
@@ -98,7 +171,7 @@ export default function BrowserView(props) {
     if (!NO_VNC) {
       connect();
       return () => {
-        if (rfbObj.current) {rfbObj.current.disconnect()}
+        if (rfbObj.current) { rfbObj.current.disconnect() }
         debug("disconnected RFB object on unmount");
       };
     }

@@ -1,14 +1,44 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./CodingView.css";
 import CodeEditor from "../components/CodeEditor";
 
 export default function CodingView(props) {
   const [suggestions, set_suggestions] = useState([]);
   const [iframeKey, setIframeKey] = useState(0); // Key to force iframe reload
-
+  const iframeRef = useRef(null);
   const refreshIframe = () => {
     setIframeKey((prevKey) => prevKey + 1); // Increment key to reload iframe
   };
+  const setClipboard = props.setClipboard;
+  const clipboard = props.clipboard;
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe) return;
+
+    const handleLoad = () => {
+      try {
+        const doc = iframe.contentWindow.document;
+        doc.addEventListener("copy", (e) => {
+          const text =
+            e.clipboardData?.getData("text/plain") ||
+            doc.getSelection()?.toString() ||
+            "";
+          console.log("Copied text from DT:", text);
+          setClipboard((clipboard) => {
+            const updated = [...clipboard, text];
+            return updated.length > 20 ? updated.slice(-20) : updated;
+          });
+          // Optionally store or forward it:
+          // navigator.clipboard.writeText(text);
+        });
+      } catch (err) {
+        console.warn("Unable to access iframe contents:", err);
+      }
+    };
+
+    iframe.addEventListener("load", handleLoad);
+    return () => iframe.removeEventListener("load", handleLoad);
+  }, [iframeKey]);
 
   return (
     <div className="codingView">
@@ -31,9 +61,16 @@ export default function CodingView(props) {
         >
           Refresh
         </button>
-        <iframe
+        {/* <iframe
           key={iframeKey}
           src="http://localhost:8080/dashboard"
+          title="Dependency Track"
+          style={{ height: "100%", width: "100%", border: "none" }}
+        /> */}
+        <iframe
+          ref={iframeRef}
+          key={iframeKey}
+          src="/dt/dashboard"
           title="Dependency Track"
           style={{ height: "100%", width: "100%", border: "none" }}
         />

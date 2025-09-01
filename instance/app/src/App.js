@@ -12,6 +12,7 @@ import useSavedState from "./hooks/useSavedState";
 import useTaskState from "./hooks/useTaskState";
 import { submit, compile } from "./services";
 import { isUndefined } from "./util";
+import ClipboardView from './views/clipboardView';
 
 function App() {
   const [tab, setTab] = useSavedState("tab", "code");
@@ -24,6 +25,8 @@ function App() {
   const [output, set_output] = useTaskState("output", real_taskno, "");
   const editorRef = useRef(null);
   const focus_time = useFocusTime();
+
+  const [clipboard, setClipboard] = useState([]);
 
   // Cheat to hide noVNC cursor on tab switch since it exists outside of the react DOM
   useEffect(() => {
@@ -154,6 +157,8 @@ function App() {
                 output={[output, set_output]}
                 compile_code={compile_code}
                 real_taskno={real_taskno}
+                clipboard={clipboard}
+                setClipboard={setClipboard}
               />
             </TabView>
 
@@ -161,7 +166,11 @@ function App() {
               {/*We pass current tab so BrowserView can see when the user
               switches tabs and when it needs to compute a resize for the
               window*/}
-              <BrowserView setConnStatus={setConnStatus} currentTab={tab} />
+              <BrowserView setConnStatus={setConnStatus} currentTab={tab} clipboard={clipboard}
+                setClipboard={setClipboard}/>
+            </TabView>
+            <TabView tabName="clipboard" currentTab={tab}>
+                <ClipboardView clipboard={clipboard} setClipboard={setClipboard} />
             </TabView>
           </div>
 

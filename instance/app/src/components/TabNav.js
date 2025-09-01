@@ -10,10 +10,15 @@ export default function TabNav(props) {
     props.setTab("browser");
   }
 
+  function clipTab() {
+    props.setTab("clipboard");
+  }
+
   return (
     <>
-      <Tab title="CODE" onClick={codeTab} activeTab={props.tab} />
-      <Tab title="BROWSER" onClick={browseTab} activeTab={props.tab} />
+      <Tab title="Dependency Track" onClick={codeTab} activeTab={props.tab} />
+      <Tab title="Broswer" onClick={browseTab} activeTab={props.tab} />
+      <Tab title="Clipboard" onClick={clipTab} activeTab={props.tab} />
     </>
   );
 }
