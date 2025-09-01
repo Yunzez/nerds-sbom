@@ -96,9 +96,13 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 ## Some Docker command shortcuts 
 
 ```bash
-#clean all stopped containers
+#stop all dockers clean all stopped containers
+#it's better to do this since NERDS doesn't seem to clean up after
+docker stop $(docker ps -q)
+docker rm $(docker ps -aq)
 docker container prune
 
 #show all containers 
 docker ps -a
 ```
+
