@@ -93,6 +93,56 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 
 ```
 
+## Wrong proxy
+Sometimes after deleting some of the old instances during testing (e.g. docker ps --filter "ancestor=devob_instance" -q | xargs -r docker stop) 
+it would report 502 since the program did not renew the new proxy, you can just do 
+```bash
+docker ps --filter "ancestor=devob_instance"
+```
+you would get something like:
+| CONTAINER ID | IMAGE          | COMMAND                 | CREATED        | STATUS         | PORTS | NAMES               |
+|--------------|---------------|------------------------|---------------|---------------|-------|---------------------|
+| b0f00b7e7de4 | devob_instance | "/usr/bin/runsvdir /…" | 5 seconds ago | Up 4 seconds  |       | flamboyant_carson   |
+
+replace the link proxy number to the instance:
+https://localhost/proxy/<new_proxy_number>/nb/
+
+## Usual clean up
+```bash
+# Dry-run: list all containers older than 24h
+docker ps -a --filter "status=exited" --filter "until=24h"
+
+# Remove stopped containers older than a day
+docker container prune --filter "until=24h" -f
+
+# List running study instances
+docker ps --filter "ancestor=devob_instance" --format '{{.Names}}'
+
+# Stop them
+docker ps --filter "ancestor=devob_instance" -q | xargs -r docker stop
+```
+
+## Deep Clean up
+When some databases are corrupted, the easiest way to do it (if you are in an isolated enviroment) is to just reset everything
+```bash
+# remove leftover containers for this project name
+docker ps -a --format '{{.Names}}' | grep -E '^devob|^dependency-track|_instance$' | xargs -r docker rm -f
+
+# remove project networks (expect: devob_instances, devob_main)
+docker network rm devob_instances devob_main 2>/dev/null || true
+
+# Below removes literally everthing, be careful
+docker stop $(docker ps -q) 2>/dev/null
+docker rm -f $(docker ps -aq) 2>/dev/null
+# Remove all volumes
+docker volume rm $(docker volume ls -q) 2>/dev/null
+# Remove all networks (except default ones)
+docker network prune -f
+
+# Remove all dangling images, build cache, etc.
+docker system prune -a --volumes -f
+```
+
 ## Some Docker command shortcuts 
 
 ```bash
@@ -105,4 +155,8 @@ docker container prune
 #show all containers 
 docker ps -a
 ```
+
+
+
+
 
