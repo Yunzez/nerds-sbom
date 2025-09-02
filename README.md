@@ -93,6 +93,26 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 
 ```
 
+## Clean up
+```bash
+# remove leftover containers for this project name
+docker ps -a --format '{{.Names}}' | grep -E '^devob|^dependency-track|_instance$' | xargs -r docker rm -f
+
+# remove project networks (expect: devob_instances, devob_main)
+docker network rm devob_instances devob_main 2>/dev/null || true
+
+# Below removes literally everthing, be careful
+docker stop $(docker ps -q) 2>/dev/null
+docker rm -f $(docker ps -aq) 2>/dev/null
+# Remove all volumes
+docker volume rm $(docker volume ls -q) 2>/dev/null
+# Remove all networks (except default ones)
+docker network prune -f
+
+# Remove all dangling images, build cache, etc.
+docker system prune -a --volumes -f
+```
+
 ## Some Docker command shortcuts 
 
 ```bash
@@ -105,4 +125,5 @@ docker container prune
 #show all containers 
 docker ps -a
 ```
+
 
