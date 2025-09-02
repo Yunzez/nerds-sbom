@@ -25,7 +25,7 @@ export default function CodingView(props) {
             "";
           console.log("Copied text from DT:", text);
           setClipboard((clipboard) => {
-            const updated = [...clipboard, text];
+            const updated = [text, ...clipboard];
             return updated.length > 20 ? updated.slice(-20) : updated;
           });
           // Optionally store or forward it:
