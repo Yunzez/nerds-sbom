@@ -93,6 +93,20 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 
 ```
 
+## Wrong proxy
+Sometimes after deleting some of the old instances during testing (e.g. docker ps --filter "ancestor=devob_instance" -q | xargs -r docker stop) 
+it would report 502 since the program did not renew the new proxy, you can just do 
+```bash
+docker ps --filter "ancestor=devob_instance"
+```
+you would get something like:
+| CONTAINER ID | IMAGE          | COMMAND                 | CREATED        | STATUS         | PORTS | NAMES               |
+|--------------|---------------|------------------------|---------------|---------------|-------|---------------------|
+| b0f00b7e7de4 | devob_instance | "/usr/bin/runsvdir /…" | 5 seconds ago | Up 4 seconds  |       | flamboyant_carson   |
+
+replace the link proxy number to the instance:
+https://localhost/proxy/<new_proxy_number>/nb/
+
 ## Usual clean up
 ```bash
 # Dry-run: list all containers older than 24h
@@ -141,6 +155,7 @@ docker container prune
 #show all containers 
 docker ps -a
 ```
+
 
 
 
