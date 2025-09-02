@@ -11,6 +11,7 @@ const NO_VNC = false;
 export default function BrowserView(props) {
   const rfbElement = useRef(null);
   const containerElement = useRef(null);
+  const lastVmClipboardRef = useRef(null);
   const rfbObj = useRef(null);
   // Can be one of null, connecting, connected, disconnected, and failed
   const [rfbStatus, setRfbStatus] = useState(null);
@@ -20,105 +21,110 @@ export default function BrowserView(props) {
   const SHOW_DEBUG = DEV_MODE;
   const clipboard = props.clipboard;
   const setClipboard = props.setClipboard;
-  console.log("browser in");
+  const setLoading = props.setLoading;
+  const loading = props.loading;
+  console.log("browser in 2");
 
-// Fixed version with correct charCodeAt and safer character handling:
+  // Fixed version with correct charCodeAt and safer character handling:
 
 
 
+  useEffect(() => {
+    const el = rfbElement.current;
+    if (!el) return;
 
-useEffect(() => {
-  const el = rfbElement.current;
-  if (!el) return;
+    el.tabIndex = 0; // focusable so it can receive key events
 
-  el.tabIndex = 0; // focusable so it can receive key events
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    let pendingPaste = null; // Store paste text until Ctrl is released
 
-  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-  let pendingPaste = null; // Store paste text until Ctrl is released
+    // Type plain text into the guest: printable ASCII + newline/tab
+    const typeAscii = async (rfb, text) => {
+      if (!text) return;
+      console.log("Starting typeAscii for:", text.substring(0, 50) + "...");
 
-  // Type plain text into the guest: printable ASCII + newline/tab
-  const typeAscii = async (rfb, text) => {
-    if (!text) return;
-    console.log("Starting typeAscii for:", text.substring(0, 50) + "...");
-    
-    // small safety: ensure canvas focus
-    try { rfb.focus?.(); } catch {}
-    await sleep(10);
+      // small safety: ensure canvas focus
+      try { rfb.focus?.(); } catch { }
+      await sleep(5);
 
-    // pace it so the guest doesn't miss chars
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
-      if (ch === "\n") {
-        rfb.sendKey?.(undefined, "Enter", true);
-        rfb.sendKey?.(undefined, "Enter", false);
-      } else if (ch === "\t") {
-        rfb.sendKey?.(undefined, "Tab", true);
-        rfb.sendKey?.(undefined, "Tab", false);
-      } else {
-        const cp = ch.charCodeAt(0);
-        // printable ASCII range
-        if (cp >= 32 && cp <= 126) {
-          // keysym == codepoint works for ASCII on noVNC
-          rfb.sendKey?.(cp, undefined, true);
-          rfb.sendKey?.(cp, undefined, false);
+      // pace it so the guest doesn't miss chars
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (ch === "\n") {
+          rfb.sendKey?.(undefined, "Enter", true);
+          rfb.sendKey?.(undefined, "Enter", false);
+        } else if (ch === "\t") {
+          rfb.sendKey?.(undefined, "Tab", true);
+          rfb.sendKey?.(undefined, "Tab", false);
+        } else {
+          const cp = ch.charCodeAt(0);
+          // printable ASCII range
+          if (cp >= 32 && cp <= 126) {
+            // keysym == codepoint works for ASCII on noVNC
+            rfb.sendKey?.(cp, undefined, true);
+            rfb.sendKey?.(cp, undefined, false);
+          }
         }
       }
-      // More consistent pacing - every 5 characters instead of every 8
-      if (i % 5 === 0) await sleep(3);
-    }
-    console.log("typeAscii completed");
-  };
+      setLoading(false);
+    };
 
-  const onKeyDown = async (e) => {
-    const rfb = rfbObj.current;
-    if (!rfb) return;
-
-    const isPaste = (e.ctrlKey || e.metaKey) && e.key?.toLowerCase() === "v";
-    if (!isPaste) return;
-    
-    console.log("Ctrl+V detected - preventing default and storing paste text");
-    
-    // stop the browser/noVNC from handling Ctrl+V
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation?.();
-    e.returnValue = false;
-
-    // Get text to paste but DON'T paste it yet - store it for when Ctrl is released
-    let txt = Array.isArray(clipboard) ? clipboard[0]
-            : (typeof clipboard === "string" ? clipboard : "");
-    if (!txt && navigator.clipboard?.readText) {
-      try { txt = await navigator.clipboard.readText(); } catch {}
-    }
-
-    console.log("Storing text for paste when Ctrl released:", txt?.substring(0, 50) + "...");
-    pendingPaste = txt; // Store the text, don't paste yet
-  };
-
-  const onKeyUp = async (e) => {
-    // When Ctrl key is released, execute the pending paste
-    if ((e.key === "Control") && pendingPaste) {
-      console.log("Ctrl released - executing pending paste");
-      
+    const onKeyDown = async (e) => {
       const rfb = rfbObj.current;
-      if (rfb) {
-        await typeAscii(rfb, pendingPaste);
+      if (!rfb) return;
+
+      const isPaste = (e.ctrlKey || e.metaKey) && e.key?.toLowerCase() === "v";
+
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation?.();
+      e.returnValue = false;
+      if (!isPaste) return;
+
+      console.log("Ctrl+V detected - preventing default and storing paste text");
+      // Get text to paste but DON'T paste it yet - store it for when Ctrl is released
+      let txt = Array.isArray(clipboard) ? clipboard[0]
+        : (typeof clipboard === "string" ? clipboard : "");
+      if (!txt && navigator.clipboard?.readText) {
+        try { txt = await navigator.clipboard.readText(); } catch { }
       }
-      pendingPaste = null; // Clear the pending paste
-    }
-  };
 
-  // Listen for both keydown (to capture paste command) and keyup (to execute when Ctrl released)
-  el.addEventListener("keydown", onKeyDown, true);
-  el.addEventListener("keyup", onKeyUp, true);
+      console.log("Storing text for paste when Ctrl released:", txt?.substring(0, 50) + "...");
+      pendingPaste = txt; // Store the text, don't paste yet
+    };
 
-  return () => {
-    el.removeEventListener("keydown", onKeyDown, true);
-    el.removeEventListener("keyup", onKeyUp, true);
-  };
-}, [rfbElement, rfbObj, clipboard]);
-  
-  
+
+    const onKeyUp = async (e) => {
+      // When Ctrl key is released, execute the pending paste
+      if (e.key === "v" && (e.ctrlKey || e.metaKey)) {
+        console.log("Ctrl + V released - executing pending paste");
+        const rfb = rfbObj.current;
+        if (rfb) {
+          setLoading(true);
+          await typeAscii(rfb, pendingPaste);
+
+          pendingPaste = null;
+        }
+
+      } else if (e.key === "c" && (e.ctrlKey || e.metaKey)) {
+        console.log("Ctrl+C detected - copying to clipboard");
+        const text = lastVmClipboardRef.current;
+        setClipboard(prev => [text, ...prev]);
+      }
+    };
+    console.log("assigning event listeners");
+    // Listen for both keydown (to capture paste command) and keyup (to execute when Ctrl released)
+    el.addEventListener("keydown", onKeyDown, true);
+    el.addEventListener("keyup", onKeyUp, true);
+    // el.addEventListener("paste", handlePaste, true);
+    return () => {
+      el.removeEventListener("keydown", onKeyDown, true);
+      el.removeEventListener("keyup", onKeyUp, true);
+      // el.removeEventListener("paste", handlePaste, true);
+    };
+  }, [rfbElement, rfbObj, clipboard]);
+
+
 
   function debug(msg) {
     if (SHOW_DEBUG) {
@@ -189,7 +195,9 @@ useEffect(() => {
   const handleClipboard = (stat) => {
     debug("Got clipboard event");
     debug(stat.detail);
+    console.log("Clipboard text:", stat.detail?.text?.substring(0, 50) + "...");
     if (stat.detail && navigator.clipboard) {
+      lastVmClipboardRef.current = stat.detail.text;
       navigator.clipboard.writeText(stat.detail.text);
     }
   }

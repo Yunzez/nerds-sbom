@@ -1,15 +1,22 @@
 .navBar {
   display: flex;
-  flex: 0 0;
   align-items: center;
-  background-color: #737373;
-  font-size:16px;
+  background:  #737373;
+  font-size: 16px;
+  padding: 0.2em 0.4em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  color: #fff;
+  justify-content: space-between;
 }
 
 .statusBar {
   margin-left: auto;
-  padding: 0.2em 0.5em;
-  background-color: #969696;
+  padding: 0.2em 1em;
+  background: linear-gradient(90deg, #a3a3a3 0%, #737373 100%);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  color: #fff;
+  font-weight: 500;
 }
 
 .main {

@@ -13,6 +13,7 @@ import useTaskState from "./hooks/useTaskState";
 import { submit, compile } from "./services";
 import { isUndefined } from "./util";
 import ClipboardView from './views/clipboardView';
+import Loading from './components/Loading';
 
 function App() {
   const [tab, setTab] = useSavedState("tab", "code");
@@ -23,6 +24,7 @@ function App() {
   const real_taskno = isUndefined(task_list[taskno - 1]) ? 1 : task_list[taskno - 1].task_no; /* The current task in the original ordering + 1 */
   const [current, set_current] = useTaskState("current", real_taskno, 0); /* Current suggestion that's selected by the user */
   const [output, set_output] = useTaskState("output", real_taskno, "");
+  const [loading, setLoading] = useState(false);
   const editorRef = useRef(null);
   const focus_time = useFocusTime();
 
@@ -143,13 +145,19 @@ function App() {
         <div className="views-container">
           <div className="navBar">
             <TabNav tab={tab} setTab={setTab} />
-            <div className="statusBar">
-              <StatusDot label="Connection" status={connStatus} />
+            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+              <div className="statusBar">
+                <Loading loading={loading} />
+              </div>
+              <div className="statusBar">
+                <StatusDot label="Connection" status={connStatus} />
+              </div>
             </div>
+
           </div>
           <div className="tab-views">
-            <TabView tabName="code" currentTab={tab}>
-              <CodingView 
+            <TabView tabName="dependency track" currentTab={tab}>
+              <CodingView
                 suggestions={suggestions}
                 submit={submit_code}
                 editorRef={editorRef}
@@ -167,10 +175,10 @@ function App() {
               switches tabs and when it needs to compute a resize for the
               window*/}
               <BrowserView setConnStatus={setConnStatus} currentTab={tab} clipboard={clipboard}
-                setClipboard={setClipboard}/>
+                setClipboard={setClipboard} loading={loading} setLoading={setLoading} />
             </TabView>
             <TabView tabName="clipboard" currentTab={tab}>
-                <ClipboardView clipboard={clipboard} setClipboard={setClipboard} />
+              <ClipboardView clipboard={clipboard} setClipboard={setClipboard} loading={loading} setLoading={setLoading} />
             </TabView>
           </div>
 

@@ -3,7 +3,7 @@ import Tab from "./Tab";
 
 export default function TabNav(props) {
   function codeTab() {
-    props.setTab("code");
+    props.setTab("dependency track");
   }
 
   function browseTab() {
@@ -15,10 +15,10 @@ export default function TabNav(props) {
   }
 
   return (
-    <>
+    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
       <Tab title="Dependency Track" onClick={codeTab} activeTab={props.tab} />
-      <Tab title="Broswer" onClick={browseTab} activeTab={props.tab} />
+      <Tab title="Browser" onClick={browseTab} activeTab={props.tab} />
       <Tab title="Clipboard" onClick={clipTab} activeTab={props.tab} />
-    </>
+    </div>
   );
 }
