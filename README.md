@@ -101,14 +101,11 @@ docker ps -a --filter "status=exited" --filter "until=24h"
 # Remove stopped containers older than a day
 docker container prune --filter "until=24h" -f
 
-# Remove unused networks
-docker network prune -f
+# List running study instances
+docker ps --filter "ancestor=devob_instance" --format '{{.Names}}'
 
-# Remove dangling images
-docker image prune -f
-
-# Remove unused volumes
-docker volume prune -f
+# Stop them
+docker ps --filter "ancestor=devob_instance" -q | xargs -r docker stop
 ```
 
 ## Deep Clean up
@@ -144,6 +141,7 @@ docker container prune
 #show all containers 
 docker ps -a
 ```
+
 
 
 
