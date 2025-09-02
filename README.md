@@ -93,7 +93,26 @@ docker compose exec db psql -U created_instances_user -d notebook -c \
 
 ```
 
-## Clean up
+## Usual clean up
+```bash
+# Dry-run: list all containers older than 24h
+docker ps -a --filter "status=exited" --filter "until=24h"
+
+# Remove stopped containers older than a day
+docker container prune --filter "until=24h" -f
+
+# Remove unused networks
+docker network prune -f
+
+# Remove dangling images
+docker image prune -f
+
+# Remove unused volumes
+docker volume prune -f
+```
+
+## Deep Clean up
+When some databases are corrupted, the easiest way to do it (if you are in an isolated enviroment) is to just reset everything
 ```bash
 # remove leftover containers for this project name
 docker ps -a --format '{{.Names}}' | grep -E '^devob|^dependency-track|_instance$' | xargs -r docker rm -f
@@ -125,5 +144,6 @@ docker container prune
 #show all containers 
 docker ps -a
 ```
+
 
 
