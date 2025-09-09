@@ -23,21 +23,7 @@ different tasks in an online C editor:
 <li>swapping two items in the list.</li>
 </ul></p>
 
-<p>Before you implement each task, you will be presented with five AI generated
-code suggestions to help you complete that task. You must choose one of the
-five suggestions to serve as the starting point for your implementation. Before
-selecting and editing any suggestion, please read the task description
-carefully. Once you find a suggestion that you would like to use, press the
-“pick” button. Once you select a suggestion, you will be able to edit, compile,
-run, and test the code.</p>
-
-<p>If you find that for any reason you are unable to complete a particular
-task, please click the button labeled “Skip Task." We appreciate your effort!
-You can stop and return to the study at any point; your progress is
-automatically saved. To return to the study, click on the original link given
-to you by the study administrators using the same computer you used to start
-the study. We use cookies to track your progress, so please ensure they are
-enabled for our site.</p>
+<p></p>
 
 
 <h2>Need to look something up? Do it within the app</h2>
