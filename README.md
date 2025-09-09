@@ -156,6 +156,12 @@ docker container prune
 docker ps -a
 ```
 
+## DB password issue
+```bash
+grep -R "insert_user" -n containers control instance submit config | cat
+cat config/.secrets
+#find the password, usually pwUser2= ...
+```
 
 
 
