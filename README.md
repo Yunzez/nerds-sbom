@@ -160,8 +160,15 @@ docker ps -a
 ```bash
 grep -R "insert_user" -n containers control instance submit config | cat
 cat config/.secrets
-#find the password, usually pwUser2= ...
+#find the password for created_instances_user and insert_user in file containers/postgres/dbSchema.sql
+#then:
+docker exec -it devob-db-1 psql -U postgres -d postgres
+
+#once in psql:
+ALTER ROLE insert_user            WITH PASSWORD 'PW_FOR_insert_user';
+ALTER ROLE created_instances_user WITH PASSWORD 'PW_FOR_created_instances_user';
 ```
+
 
 
 
