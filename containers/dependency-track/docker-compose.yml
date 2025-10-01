@@ -1,0 +1,57 @@
+version: "3.9"
+services:
+  dt-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dtrack
+      POSTGRES_USER: dtrack
+      POSTGRES_PASSWORD: dtrack
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - dt-postgres-data:/var/lib/postgresql/data
+    networks: [ main ]
+    restart: unless-stopped
+
+  dt-apiserver:
+    image: dependencytrack/apiserver:latest
+    container_name: dt-apiserver        # stable DNS name on the shared network
+    depends_on:
+      dt-postgres:
+        condition: service_healthy
+    environment:
+      ALPINE_DATABASE_MODE: external
+      ALPINE_DATABASE_URL: jdbc:postgresql://dt-postgres:5432/dtrack
+      ALPINE_DATABASE_DRIVER: org.postgresql.Driver
+      ALPINE_DATABASE_USERNAME: dtrack
+      ALPINE_DATABASE_PASSWORD: dtrack
+      LOGGING_LEVEL: INFO
+      EXTRA_JAVA_OPTIONS: "-Dlogback.configurationFile=/data/logback.xml"
+    volumes:
+      - ./dtrack-data:/data              # contains logback.xml + logs/
+    networks: [ main ]
+    restart: unless-stopped
+    # no ports; nginx from the other project will reach it on the shared 'main' net
+
+  dt-frontend:
+    image: dependencytrack/frontend:latest
+    container_name: dt-frontend          # stable DNS name on the shared network
+    depends_on:
+      dt-apiserver:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "/dt/api"            # path nginx will expose
+    networks: [ main ]
+    restart: unless-stopped
+    # no ports
+
+volumes:
+  dt-postgres-data:
+
+networks:
+  main:
+    external: true
+    name: devob_main 
