@@ -74,25 +74,33 @@ export default function BrowserView(props) {
       if (!rfb) return;
 
       const isPaste = (e.ctrlKey || e.metaKey) && e.key?.toLowerCase() === "v";
+      const isControlKey = e.key === "Control" || e.key === "Meta" || e.key === "Cmd";
 
+      console.log("keydown", e.key, "ctrl:", e.ctrlKey, "meta:", e.metaKey, "isPaste:", isPaste, "isControlKey:", isControlKey);
+
+      // Intercept paste events AND control keys to prevent Firefox from starting Ctrl+V sequence
+      if (!isPaste && !isControlKey) return; // Let normal keyboard input pass through
+
+      // Prevent default for paste events and control keys
       e.preventDefault();
       e.stopPropagation();
       e.stopImmediatePropagation?.();
       e.returnValue = false;
-      if (!isPaste) return;
 
-      console.log("Ctrl+V detected - preventing default and storing paste text");
-      // Get text to paste but DON'T paste it yet - store it for when Ctrl is released
-      let txt = Array.isArray(clipboard) ? clipboard[0]
-        : (typeof clipboard === "string" ? clipboard : "");
-      if (!txt && navigator.clipboard?.readText) {
-        try { txt = await navigator.clipboard.readText(); } catch { }
+      // Only handle paste logic for actual paste events
+      if (isPaste) {
+        console.log("Ctrl+V detected - preventing default and storing paste text");
+        // Get text to paste but DON'T paste it yet - store it for when Ctrl is released
+        let txt = Array.isArray(clipboard) ? clipboard[0]
+          : (typeof clipboard === "string" ? clipboard : "");
+        if (!txt && navigator.clipboard?.readText) {
+          try { txt = await navigator.clipboard.readText(); } catch { }
+        }
+
+        console.log("Storing text for paste when Ctrl released:", txt?.substring(0, 50) + "...");
+        pendingPaste = txt; // Store the text, don't paste yet
       }
-
-      console.log("Storing text for paste when Ctrl released:", txt?.substring(0, 50) + "...");
-      pendingPaste = txt; // Store the text, don't paste yet
     };
-
 
     const onKeyUp = async (e) => {
       // When Ctrl key is released, execute the pending paste

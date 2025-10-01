@@ -3,8 +3,14 @@ services:
   nginx:
     build: ./containers/nginx
     depends_on:
-      - landing-server
-      - submit
+      landing-server:
+        condition: service_started
+      submit:
+        condition: service_started
+      dt-frontend:
+        condition: service_healthy
+      dt-apiserver:
+        condition: service_healthy
     networks:
       - main
       - instances
@@ -74,12 +80,78 @@ services:
   #   networks:
   #     - main
 
+  dt-postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: dtrack
+      POSTGRES_USER: dtrack
+      POSTGRES_PASSWORD: dtrack
+      API_BASE_URL: "/dt/api"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - dt-postgres-data:/var/lib/postgresql/data
+    networks: [ main ]
+    restart: unless-stopped
+
+  dt-apiserver:
+    image: dependencytrack/apiserver:latest
+    container_name: dt-apiserver
+    depends_on:
+      dt-postgres:
+        condition: service_healthy
+    environment:
+      ALPINE_DATABASE_MODE: external
+      ALPINE_DATABASE_URL: jdbc:postgresql://dt-postgres:5432/dtrack
+      ALPINE_DATABASE_DRIVER: org.postgresql.Driver
+      ALPINE_DATABASE_USERNAME: dtrack
+      ALPINE_DATABASE_PASSWORD: dtrack
+      LOGGING_LEVEL: INFO
+      LOGGING_CONFIG_PATH: /data/logback.xml
+      # EXTRA_JAVA_OPTIONS: "-Dlogback.configurationFile=/data/logback.xml"
+    volumes:
+      - ./containers/dependency-track/dtrack-data:/data
+    networks:
+      - main
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/version"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  dt-frontend:
+    image: dependencytrack/frontend:latest
+    container_name: dt-frontend
+    depends_on:
+      dt-apiserver:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "/dt/api"
+    networks:
+      - main
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+
 volumes:
   data:
     name: aicodegen-data
+  dt-postgres-data:
+    name: dt-postgres-data
 
 networks:
   main:
+    name: devob_main
     driver: bridge
   instances:
     driver: bridge

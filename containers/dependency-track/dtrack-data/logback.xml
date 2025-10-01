@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>/data/logs/dependency-track.log</file>
+    <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+      <fileNamePattern>/data/logs/dependency-track.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+      <maxFileSize>20MB</maxFileSize>
+      <maxHistory>7</maxHistory>
+    </rollingPolicy>
+    <encoder>
+      <pattern>%date{yyyy-MM-dd HH:mm:ss} %-5level [%logger{50}] %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- Silence noisy tasks -->
+  <logger name="org.dependencytrack.tasks.mirror" level="WARN"/>
+  <logger name="org.dependencytrack.tasks.ossindex" level="WARN"/>
+  <logger name="org.dependencytrack.tasks.NistMirrorTask" level="WARN" />
+  <logger name="org.dependencytrack.tasks.EpssMirrorTask" level="WARN" />
+
+  <!-- Turn these back to INFO instead of DEBUG -->
+  <logger name="org.eclipse.jetty.ee10.servlet.ServletHandler" level="INFO"/>
+  <logger name="org.eclipse.jetty.ee10.servlet.ServletChannel" level="INFO"/>
+  <logger name="alpine.server.filters" level="INFO"/>
+  <logger name="org.glassfish.jersey.server.ServerRuntime" level="INFO"/>
+  <logger name="org.glassfish.jersey.servlet.WebComponent" level="INFO"/>
+
+  <!-- Keep resource logging at INFO to see API calls -->
+  <logger name="org.dependencytrack.resources" level="INFO"/>
+  
+  <!-- Silence Jetty noise -->
+  <logger name="org.eclipse.jetty" level="WARN"/>
+
+  <root level="INFO">
+    <appender-ref ref="APP"/>
+  </root>
+</configuration>
