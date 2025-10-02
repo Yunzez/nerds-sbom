@@ -70,8 +70,9 @@ export default function CodingView(props) {
         <iframe
           ref={iframeRef}
           key={iframeKey}
-          src="/dt/dashboard"
+          src="/dt/"
           title="Dependency Track"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals"
           style={{ height: "100%", width: "100%", border: "none" }}
         />
       </div>

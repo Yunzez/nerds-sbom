@@ -1,0 +1,3 @@
+2025/10/02 06:00:21 [warn] 1#1: duplicate MIME type "text/html" in /etc/nginx/nginx.conf:173
+2025/10/02 06:00:52 [error] 29#29: *3 open() "/var/www/devob/.well-known/appspecific/com.chrome.devtools.json" failed (2: No such file or directory), client: 192.168.150.1, server: _, request: "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1", host: "localhost"
+2025/10/02 06:00:52 [error] 29#29: *10 open() "/var/www/devob/api/v1/configProperty/public/general/default.locale" failed (2: No such file or directory), client: 192.168.150.1, server: _, request: "GET /api/v1/configProperty/public/general/default.locale HTTP/1.1", host: "localhost", referrer: "https://localhost/dt/projects/235e43e8-6f5a-47db-81ad-27f7fcf8d0ec"

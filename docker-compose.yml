@@ -11,6 +11,8 @@ services:
         condition: service_healthy
       dt-apiserver:
         condition: service_healthy
+    volumes:
+      - ./containers/dependency-track/dtrack-data/nginx-logs:/var/log/nginx
     networks:
       - main
       - instances
@@ -130,10 +132,13 @@ services:
     depends_on:
       dt-apiserver:
         condition: service_healthy
-    environment:
-      API_BASE_URL: "/dt/api"
+    # environment:
+      # API_BASE_URL: "/dt/api"
+      # BASE_HREF: "/dt/"  
     networks:
       - main
+    ports:
+    - "8081:8080"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
