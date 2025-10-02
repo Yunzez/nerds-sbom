@@ -60,6 +60,14 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 ```bash
 ./dev-ob.sh run
 ```
+**We have a Dependency track integrated in the docker compose**
+**You can view the output of dt-api by doing: 
+```bash
+cd containers/dependency-track
+tail -f dtrack-data/nginx-logs/dt-api-access.log
+
+```
+
 
 **To open a session**
 URL: https://localhost/index.php?ext_ref=yunze
@@ -168,6 +176,7 @@ docker exec -it devob-db-1 psql -U postgres -d postgres
 ALTER ROLE insert_user            WITH PASSWORD 'PW_FOR_insert_user';
 ALTER ROLE created_instances_user WITH PASSWORD 'PW_FOR_created_instances_user';
 ```
+
 
 
 
