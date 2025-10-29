@@ -1,0 +1,6 @@
+LANDING_URL = ""
+APP_MODE = "PROD"
+SUBMIT_SECRET = "eeuRGuxTDpWv59HxIkSL6a46ASyKKSQ2"
+USER_DATA_FILE = "/home/user/.instanceinfo"
+DB_URL = "http://nginx"
+TASKFILES_BASE_PATH = "/home/user/tasks/"
